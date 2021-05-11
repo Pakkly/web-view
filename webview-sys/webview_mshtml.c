@@ -964,6 +964,9 @@ LRESULT CALLBACK wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
     break;
   }
+  case WM_NCCALCSIZE: {
+        return 0;
+  }
   case WM_CLOSE:
     if (wv->hide_instead_of_close) {
       ShowWindow(hwnd, SW_HIDE);
