@@ -11,10 +11,10 @@ categories = ["gui", "web-programming", "api-bindings", "rendering", "visualizat
 exclude = ["webview-sys/**", "webview-examples/**", ".github/**", "Cargo.lock"]
 
 [dependencies]
-urlencoding = "1.1"
+urlencoding = "2.1.2"
 webview-sys = { path = "webview-sys", version = "0.6.2" }
 boxfnonce = "0.1"
-tinyfiledialogs = "3.3"
+tinyfiledialogs = "3.9.1"
 
 [features]
 edge = ["webview-sys/edge"]

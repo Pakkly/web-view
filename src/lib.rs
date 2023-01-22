@@ -252,8 +252,7 @@ where
     pub fn build(self) -> WVResult<WebView<'a, T>> {
         macro_rules! require_field {
             ($name:ident) => {
-                self.$name
-                    .ok_or_else(|| Error::UninitializedField(stringify!($name)))?
+                self.$name.ok_or_else(|| Error::UninitializedField(stringify!($name)))?
             };
         }
 
@@ -261,9 +260,7 @@ where
         let content = require_field!(content);
         let url = match content {
             Content::Url(url) => CString::new(url.as_ref())?,
-            Content::Html(html) => {
-                CString::new(format!("data:text/html,{}", encode(html.as_ref())))?
-            }
+            Content::Html(html) => CString::new(format!("data:text/html,{}", encode(html.as_ref())))?,
         };
         let user_data = require_field!(user_data);
         let invoke_handler = require_field!(invoke_handler);
@@ -380,10 +377,7 @@ impl<'a, T> WebView<'a, T> {
     }
 
     unsafe fn from_ptr(inner: *mut CWebView) -> WebView<'a, T> {
-        WebView {
-            inner: Some(inner),
-            _phantom: PhantomData,
-        }
+        WebView { inner: Some(inner), _phantom: PhantomData }
     }
 
     /// Creates a thread-safe [`Handle`] to the `WebView`, from which closures can be dispatched.
@@ -602,11 +596,7 @@ pub struct Handle<T> {
 
 impl<T> Clone for Handle<T> {
     fn clone(&self) -> Self {
-        Handle {
-            inner: self.inner,
-            live: self.live.clone(),
-            _phantom: PhantomData,
-        }
+        Handle { inner: self.inner, live: self.live.clone(), _phantom: PhantomData }
     }
 }
 
@@ -633,13 +623,7 @@ impl<T> Handle<T> {
         let _lock = mutex.read().map_err(|_| Error::Dispatch)?;
 
         // Send closure to webview.
-        unsafe {
-            webview_dispatch(
-                self.inner,
-                Some(ffi_dispatch_handler::<T> as _),
-                Box::into_raw(closure) as _,
-            )
-        }
+        unsafe { webview_dispatch(self.inner, Some(ffi_dispatch_handler::<T> as _), Box::into_raw(closure) as _) }
         Ok(())
     }
 }
@@ -651,8 +635,7 @@ extern "C" fn ffi_dispatch_handler<T>(webview: *mut CWebView, arg: *mut c_void) 
     unsafe {
         let mut handle = WebView::<T>::from_ptr(webview);
         let result = {
-            let callback =
-                Box::<SendBoxFnOnce<'static, (&mut WebView<T>,), WVResult>>::from_raw(arg as _);
+            let callback = Box::<SendBoxFnOnce<'static, (&mut WebView<T>,), WVResult>>::from_raw(arg as _);
             callback.call(&mut handle)
         };
         handle.user_data_wrapper_mut().result = result;
